@@ -1,33 +1,21 @@
 # Raspberry Pi Joystick Sound Player
 
-A Python project that reads input from an XY joystick controller connected to a Raspberry Pi and plays different animal sounds based on the joystick direction.
+A Python project that reads input from a Grove Base Hat Dual-Axis Joystick connected to a Raspberry Pi and plays different animal sounds based on the joystick direction.
 
 ## Hardware Requirements
 
-- Raspberry Pi (any model with GPIO)
-- XY Joystick module (analog output)
-- MCP3008 ADC converter (for reading analog joystick values)
+- Raspberry Pi (any model)
+- Grove Base Hat
+- Grove Dual-Axis Joystick module
 - Speaker or audio output
 
 ## Wiring
 
-Connect the joystick and MCP3008 to the Raspberry Pi:
+Connect the Grove Dual-Axis Joystick to the Grove Base Hat:
 
-### MCP3008 to Raspberry Pi:
-- MCP3008 VDD -> Raspberry Pi 3.3V
-- MCP3008 VREF -> Raspberry Pi 3.3V
-- MCP3008 AGND -> Raspberry Pi GND
-- MCP3008 DGND -> Raspberry Pi GND
-- MCP3008 CLK -> Raspberry Pi SCLK (GPIO 11)
-- MCP3008 DOUT -> Raspberry Pi MISO (GPIO 9)
-- MCP3008 DIN -> Raspberry Pi MOSI (GPIO 10)
-- MCP3008 CS -> Raspberry Pi CE0 (GPIO 8)
-
-### Joystick to MCP3008:
-- Joystick X axis -> MCP3008 CH0
-- Joystick Y axis -> MCP3008 CH1
-- Joystick GND -> MCP3008 AGND
-- Joystick VCC -> MCP3008 VDD
+- Joystick X axis -> A0 port on Grove Base Hat
+- Joystick Y axis -> A1 port on Grove Base Hat
+- Ensure Grove Base Hat is properly seated on Raspberry Pi GPIO pins
 
 ## Software Setup
 
@@ -36,11 +24,11 @@ Connect the joystick and MCP3008 to the Raspberry Pi:
    pip install -r requirements.txt
    ```
 
-2. Enable SPI on Raspberry Pi:
+2. Ensure I2C is enabled on Raspberry Pi:
    ```bash
    sudo raspi-config
    ```
-   Go to Interfacing Options > SPI > Enable
+   Go to Interfacing Options > I2C > Enable
 
 3. Place sound files in the `sounds/` directory:
    - `cow.mp3` - for north direction
@@ -78,7 +66,7 @@ You may need to adjust the threshold values in `main.py` (THRESHOLD_HIGH and THR
 
 ## Troubleshooting
 
-- If SPI is not working, ensure it's enabled in raspi-config
-- Check wiring connections
-- Verify sound files are in the correct format (MP3)
-- Run with `sudo` if you get permission errors for GPIO
+- If I2C is not working, ensure it's enabled in raspi-config and Grove Base Hat is properly seated
+- Check joystick connections to A0 and A1 ports
+- Verify sound files are in the correct format (MP3) and in the `sounds/` directory
+- Run with `sudo` if you get permission errors for I2C/GPIO access
