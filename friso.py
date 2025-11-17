@@ -112,8 +112,7 @@ def main():
             # Read raw values from ADC
             raw_x = adc.read_raw(X_CHANNEL)
             raw_y = adc.read_raw(Y_CHANNEL)
-            print("#"*40)
-            print(raw_x, raw_y)
+            
             # Normalize to -1 to 1 (center at 2047.5 for 12-bit ADC)
             center = 2047.5
             x_val = (raw_x - center) / center
@@ -122,7 +121,8 @@ def main():
             # Clamp values
             x_val = max(-1.0, min(1.0, x_val))
             y_val = max(-1.0, min(1.0, y_val))
-
+            print("#"*40)
+            print(x_val, y_val)
             # Get current direction
             direction = get_direction(x_val, y_val)
 
