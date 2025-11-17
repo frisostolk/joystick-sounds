@@ -27,6 +27,7 @@ import time
 import os
 from collections import deque
 import signal
+import threading
 #os.environ['SDL_AUDIODRIVER'] = 'alsa'
 # Initialize pygame mixer
 pygame.mixer.init()
@@ -86,6 +87,22 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
+def read_adc_with_timeout(adc, channel, timeout=0.1):
+    """Read ADC value with timeout to allow interrupts."""
+    result = [None]
+    def read():
+        try:
+            result[0] = adc.read_raw(channel)
+        except Exception as e:
+            result[0] = None
+            print(f"ADC read error: {e}")
+    
+    thread = threading.Thread(target=read)
+    thread.daemon = True
+    thread.start()
+    thread.join(timeout)
+    return result[0]
+
 def get_direction(x_val, y_val):
     """
     Determine direction based on joystick values
@@ -120,9 +137,14 @@ def main():
 
     try:
         while running:
-            # Read raw values from ADC
-            raw_x = adc.read_raw(X_CHANNEL)
-            raw_y = adc.read_raw(Y_CHANNEL)
+            # Read raw values from ADC with timeout to allow interrupts
+            raw_x = read_adc_with_timeout(adc, X_CHANNEL)
+            raw_y = read_adc_with_timeout(adc, Y_CHANNEL)
+            
+            if raw_x is None or raw_y is None:
+                print("ADC read failed, skipping...")
+                time.sleep(0.1)
+                continue
             
             # Normalize to -1 to 1 (center at 2047.5 for 12-bit ADC)
             center = 2047.5
