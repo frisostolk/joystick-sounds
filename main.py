@@ -26,7 +26,8 @@ import pygame
 import time
 import os
 from collections import deque
-os.environ['SDL_AUDIODRIVER'] = 'alsa'
+import signal
+#os.environ['SDL_AUDIODRIVER'] = 'alsa'
 # Initialize pygame mixer
 pygame.mixer.init()
 
@@ -63,7 +64,7 @@ else:
 adc = ADC()
 
 # ADC channels for joystick (based on your setup)
-X_CHANNEL = 2  # A0
+X_CHANNEL = 0  # A0
 Y_CHANNEL = 6  # A1
 
 # Thresholds for direction detection (adjust based on your joystick)
@@ -74,6 +75,16 @@ GESTURE_WINDOW_SECONDS = 2.0
 
 # Single mixer channel so there cannot be two sounds simultaneously
 PLAY_CHANNEL = pygame.mixer.Channel(0)
+
+# Global flag for clean shutdown
+running = True
+
+def signal_handler(sig, frame):
+    global running
+    print("\nInterrupt received, shutting down...")
+    running = False
+
+signal.signal(signal.SIGINT, signal_handler)
 
 def get_direction(x_val, y_val):
     """
@@ -108,7 +119,7 @@ def main():
     gesture_events = deque()
 
     try:
-        while True:
+        while running:
             # Read raw values from ADC
             raw_x = adc.read_raw(X_CHANNEL)
             raw_y = adc.read_raw(Y_CHANNEL)
@@ -167,6 +178,7 @@ def main():
 
     except KeyboardInterrupt:
         print("\nExiting...")
+        running = False
     finally:
         # Clean up
         if PLAY_CHANNEL.get_busy():
