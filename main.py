@@ -25,6 +25,7 @@ from grove.adc import ADC
 import pygame
 import time
 import os
+from collections import deque
 
 # Initialize pygame mixer
 pygame.mixer.init()
@@ -41,6 +42,9 @@ sound_files = {
     'northwest': 'sounds/owl.mp3'
 }
 
+# Special gesture sound
+FEYENOORD_FILE = 'sounds/feyenoord.mp3'
+
 # Load sounds
 sounds = {}
 for direction, file_path in sound_files.items():
@@ -48,6 +52,12 @@ for direction, file_path in sound_files.items():
         sounds[direction] = pygame.mixer.Sound(file_path)
     else:
         print(f"Warning: Sound file {file_path} not found")
+
+feyenoord_sound = None
+if os.path.exists(FEYENOORD_FILE):
+    feyenoord_sound = pygame.mixer.Sound(FEYENOORD_FILE)
+else:
+    print(f"Warning: Gesture sound {FEYENOORD_FILE} not found")
 
 # Set up ADC for Grove Base Hat
 adc = ADC()
@@ -57,7 +67,13 @@ X_CHANNEL = 2  # A0
 Y_CHANNEL = 6  # A1
 
 # Thresholds for direction detection (adjust based on your joystick)
-THRESHOLD = 0.3  # Normalized values are -1 to 1
+THRESHOLD = 0.15  # Normalized values are -1 to 1
+
+# Gesture detection parameters
+GESTURE_WINDOW_SECONDS = 2.0
+
+# Single mixer channel so there cannot be two sounds simultaneously
+PLAY_CHANNEL = pygame.mixer.Channel(0)
 
 def get_direction(x_val, y_val):
     """
@@ -88,6 +104,8 @@ def main():
     print("Press Ctrl+C to exit.")
 
     last_direction = None
+    # For gesture detection (store tuples of (direction, timestamp))
+    gesture_events = deque()
 
     try:
         while True:
@@ -107,13 +125,43 @@ def main():
             # Get current direction
             direction = get_direction(x_val, y_val)
 
-            # Play sound if direction changed and sound exists
-            if direction != last_direction and direction in sounds and direction != 'center':
+            # Gesture tracking: only consider left/right events
+            now = time.time()
+            if direction in ('west', 'east'):
+                # Append event and purge old events
+                gesture_events.append((direction, now))
+                while gesture_events and now - gesture_events[0][1] > GESTURE_WINDOW_SECONDS:
+                    gesture_events.popleft()
+
+                # Check for left-right-left pattern in the window
+                seq = [d for d, t in gesture_events]
+                if len(seq) >= 3 and seq[-3:] == ['west', 'east', 'west'] and feyenoord_sound:
+                    # Stop any currently playing sound and play gesture sound
+                    if PLAY_CHANNEL.get_busy():
+                        PLAY_CHANNEL.stop()
+                    print("Gesture detected: left-right-left -> playing feyenoord.mp3")
+                    PLAY_CHANNEL.play(feyenoord_sound)
+                    # clear events so we don't retrigger
+                    gesture_events.clear()
+                    last_direction = 'gesture'
+                    time.sleep(0.1)
+                    continue
+
+            # Sound control rules:
+            # - Do not play two sounds at once: stop channel before playing new sound
+            # - Stop playback when joystick returns to neutral
+            if direction == 'center':
+                if PLAY_CHANNEL.get_busy():
+                    PLAY_CHANNEL.stop()
+                    print("Joystick centered -> stopping sound")
+                last_direction = None
+            elif direction != last_direction and direction in sounds:
+                # Play corresponding sound, ensuring single sound at a time
+                if PLAY_CHANNEL.get_busy():
+                    PLAY_CHANNEL.stop()
                 print(f"Playing {direction} sound")
-                sounds[direction].play()
+                PLAY_CHANNEL.play(sounds[direction])
                 last_direction = direction
-            elif direction == 'center':
-                last_direction = None  # Reset when centered
 
             time.sleep(0.1)  # Small delay to prevent rapid triggering
 
@@ -121,6 +169,8 @@ def main():
         print("\nExiting...")
     finally:
         # Clean up
+        if PLAY_CHANNEL.get_busy():
+            PLAY_CHANNEL.stop()
         pygame.mixer.quit()
 
 if __name__ == "__main__":
