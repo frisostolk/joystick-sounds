@@ -26,7 +26,7 @@ import pygame
 import time
 import os
 from collections import deque
-
+os.environ['SDL_AUDIODRIVER'] = 'alsa'
 # Initialize pygame mixer
 pygame.mixer.init()
 
