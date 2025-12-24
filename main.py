@@ -29,8 +29,10 @@ from collections import deque
 import signal
 import threading
 #os.environ['SDL_AUDIODRIVER'] = 'alsa'
-# Initialize pygame mixer
-pygame.mixer.init()
+# Initialize pygame mixer with specific settings to reduce buffer underuns/lag
+# frequency=44100, size=-16, channels=2, buffer=1024
+pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=1024)
+
 
 # Define sound mappings
 sound_files = {
@@ -60,6 +62,13 @@ if os.path.exists(FEYENOORD_FILE):
     feyenoord_sound = pygame.mixer.Sound(FEYENOORD_FILE)
 else:
     print(f"Warning: Gesture sound {FEYENOORD_FILE} not found")
+
+# Play startup sound so user checks audio immediately
+if 'north' in sounds:
+    print("Playing startup sound (cow)...")
+    sounds['north'].play()
+    time.sleep(1.0)
+
 
 # Set up ADC for Grove Base Hat
 adc = None
@@ -94,21 +103,14 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-def read_adc_with_timeout(adc, channel, timeout=0.1):
-    """Read ADC value with timeout to allow interrupts."""
-    result = [None]
-    def read():
-        try:
-            result[0] = adc.read_raw(channel)
-        except Exception as e:
-            result[0] = None
-            print(f"ADC read error: {e}")
-    
-    thread = threading.Thread(target=read)
-    thread.daemon = True
-    thread.start()
-    thread.join(timeout)
-    return result[0]
+def read_adc_safe(adc, channel):
+    """Read ADC value safely without heavy threading."""
+    try:
+        return adc.read_raw(channel)
+    except Exception as e:
+        print(f"ADC read error: {e}")
+        return None
+
 
 def get_direction(x_val, y_val):
     """
@@ -136,7 +138,7 @@ def get_direction(x_val, y_val):
 
 def main():
     print("Joystick Sound Player started. Move joystick to play sounds.")
-    print("Joystick Sound Player started. Move joystick to play sounds.")
+
     print("Press Ctrl+C to exit.")
 
     global running
@@ -152,10 +154,11 @@ def main():
                 print("Hardware not initialized. Exiting.")
                 break
 
-            # Read raw values from ADC with timeout to allow interrupts
-            raw_x = read_adc_with_timeout(adc, X_CHANNEL)
+            # Read raw values from ADC safely
+            raw_x = read_adc_safe(adc, X_CHANNEL)
 
-            raw_y = read_adc_with_timeout(adc, Y_CHANNEL)
+            raw_y = read_adc_safe(adc, Y_CHANNEL)
+
             
             if raw_x is None or raw_y is None:
                 print("ADC read failed, skipping...")
