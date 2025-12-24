@@ -76,7 +76,7 @@ X_CHANNEL = 0  # A0
 Y_CHANNEL = 6  # A1
 
 # Thresholds for direction detection (adjust based on your joystick)
-THRESHOLD = 0.4  # Normalized values are -1 to 1
+THRESHOLD = 0.5  # Normalized values are -1 to 1
 
 # Gesture detection parameters
 GESTURE_WINDOW_SECONDS = 2.0
