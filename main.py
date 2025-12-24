@@ -81,7 +81,7 @@ except Exception as e:
 
 
 # ADC channels for joystick (based on your setup)
-X_CHANNEL = 0  # A0
+X_CHANNEL = 4 # A4
 Y_CHANNEL = 6  # A1
 
 # Thresholds for direction detection (adjust based on your joystick)
