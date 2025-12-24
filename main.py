@@ -62,7 +62,14 @@ else:
     print(f"Warning: Gesture sound {FEYENOORD_FILE} not found")
 
 # Set up ADC for Grove Base Hat
-adc = ADC()
+adc = None
+try:
+    adc = ADC()
+except Exception as e:
+    print(f"\nError initializing Grove Base Hat: {e}")
+    print("Please check:\n1. Is the HAT properly seated?\n2. Is I2C enabled? (raspi-config)\n3. Are the wires connected securely?")
+    running = False
+
 
 # ADC channels for joystick (based on your setup)
 X_CHANNEL = 0  # A0
@@ -129,7 +136,11 @@ def get_direction(x_val, y_val):
 
 def main():
     print("Joystick Sound Player started. Move joystick to play sounds.")
+    print("Joystick Sound Player started. Move joystick to play sounds.")
     print("Press Ctrl+C to exit.")
+
+    global running
+
 
     last_direction = None
     # For gesture detection (store tuples of (direction, timestamp))
@@ -137,8 +148,13 @@ def main():
 
     try:
         while running:
+            if adc is None:
+                print("Hardware not initialized. Exiting.")
+                break
+
             # Read raw values from ADC with timeout to allow interrupts
             raw_x = read_adc_with_timeout(adc, X_CHANNEL)
+
             raw_y = read_adc_with_timeout(adc, Y_CHANNEL)
             
             if raw_x is None or raw_y is None:
