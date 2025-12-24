@@ -198,7 +198,14 @@ def main():
                         # clear events so we don't retrigger
                         gesture_events.clear()
                         last_direction = 'gesture'
-                        time.sleep(0.1)
+                        
+                        # Wait for 30 seconds before detecting new inputs
+                        # We use a loop to ensure we can still catch the shutdown signal
+                        print("Gesture detected. Pausing detection for 30 seconds...")
+                        for _ in range(300):  # 300 * 0.1s = 30s
+                            if not running:
+                                break
+                            time.sleep(0.1)
                         continue
 
             # Sound control rules:
