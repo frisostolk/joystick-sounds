@@ -70,3 +70,4 @@ You may need to adjust the threshold values in `main.py` (THRESHOLD_HIGH and THR
 - Check joystick connections to A0 and A1 ports
 - Verify sound files are in the correct format (MP3) and in the `sounds/` directory
 - Run with `sudo` if you get permission errors for I2C/GPIO access
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBaSYLlvPTlJy8C+Xx/4lcX3AotQLlFZI2YVVsEJLxGF frisostolk
