@@ -190,17 +190,16 @@ def main():
                 if len(seq) >= 3 and feyenoord_sound:
                     last_three = seq[-3:]
                     if last_three == ['west', 'east', 'west'] or last_three == ['east', 'west', 'east']:
-
-                    # Stop any currently playing sound and play gesture sound
-                    if PLAY_CHANNEL.get_busy():
-                        PLAY_CHANNEL.stop()
-                    print("Gesture detected: left-right-left -> playing feyenoord.mp3")
-                    PLAY_CHANNEL.play(feyenoord_sound)
-                    # clear events so we don't retrigger
-                    gesture_events.clear()
-                    last_direction = 'gesture'
-                    time.sleep(0.1)
-                    continue
+                        # Stop any currently playing sound and play gesture sound
+                        if PLAY_CHANNEL.get_busy():
+                            PLAY_CHANNEL.stop()
+                        print("Gesture detected: left-right-left -> playing feyenoord.mp3")
+                        PLAY_CHANNEL.play(feyenoord_sound)
+                        # clear events so we don't retrigger
+                        gesture_events.clear()
+                        last_direction = 'gesture'
+                        time.sleep(0.1)
+                        continue
 
             # Sound control rules:
             # - Do not play two sounds at once: stop channel before playing new sound
