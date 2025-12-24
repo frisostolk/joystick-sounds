@@ -1,0 +1,15 @@
+[Unit]
+Description=Joystick Sounds Player
+After=network.target sound.target
+
+[Service]
+Type=simple
+User=frisostolk
+WorkingDirectory=/home/frisostolk/joystick-sounds
+ExecStart=/home/frisostolk/joystick-sounds/.venv/bin/python3 main.py
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
