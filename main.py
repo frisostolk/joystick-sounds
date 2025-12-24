@@ -177,14 +177,20 @@ def main():
             # Gesture tracking: only consider left/right events
             now = time.time()
             if direction in ('west', 'east'):
-                # Append event and purge old events
-                gesture_events.append((direction, now))
+                # Append event only if different from last recorded event
+                if not gesture_events or gesture_events[-1][0] != direction:
+                    gesture_events.append((direction, now))
+                
+                # Purge old events
                 while gesture_events and now - gesture_events[0][1] > GESTURE_WINDOW_SECONDS:
                     gesture_events.popleft()
 
-                # Check for left-right-left pattern in the window
+                # Check for gesture patterns in the window
                 seq = [d for d, t in gesture_events]
-                if len(seq) >= 3 and seq[-3:] == ['west', 'east', 'west'] and feyenoord_sound:
+                if len(seq) >= 3 and feyenoord_sound:
+                    last_three = seq[-3:]
+                    if last_three == ['west', 'east', 'west'] or last_three == ['east', 'west', 'east']:
+
                     # Stop any currently playing sound and play gesture sound
                     if PLAY_CHANNEL.get_busy():
                         PLAY_CHANNEL.stop()
