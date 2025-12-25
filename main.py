@@ -31,10 +31,16 @@ import threading
 #os.environ['SDL_AUDIODRIVER'] = 'alsa'
 # Set dummy video driver for headless operation (fixes systemd startup)
 os.environ["SDL_VIDEODRIVER"] = "dummy"
+# Explicitly set audio driver to avoid auto-detection errors
+os.environ['SDL_AUDIODRIVER'] = 'alsa'
 
 # Initialize pygame mixer with specific settings to reduce buffer underuns/lag
 # frequency=44100, size=-16, channels=2, buffer=1024
-pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=1024)
+try:
+    pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=1024)
+except pygame.error as e:
+    print(f"Optimized audio init failed ({e}), falling back to defaults...")
+    pygame.mixer.init()
 
 
 # Define sound mappings
