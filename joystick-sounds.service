@@ -10,6 +10,7 @@ ExecStart=/home/frisostolk/joystick-sounds/.venv/bin/python3 main.py
 Restart=always
 RestartSec=5
 Environment=PYTHONUNBUFFERED=1
+Environment=XDG_RUNTIME_DIR=/run/user/1000
 
 [Install]
 WantedBy=multi-user.target
