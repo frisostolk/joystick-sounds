@@ -29,6 +29,9 @@ from collections import deque
 import signal
 import threading
 #os.environ['SDL_AUDIODRIVER'] = 'alsa'
+# Set dummy video driver for headless operation (fixes systemd startup)
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+
 # Initialize pygame mixer with specific settings to reduce buffer underuns/lag
 # frequency=44100, size=-16, channels=2, buffer=1024
 pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=1024)
