@@ -32,6 +32,10 @@ import threading
 # Set dummy video driver for headless operation (fixes systemd startup)
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 
+# Ensure XDG_RUNTIME_DIR is set for systemd service audio access
+if 'XDG_RUNTIME_DIR' not in os.environ:
+    os.environ['XDG_RUNTIME_DIR'] = '/run/user/1000'
+
 # Initialize pygame mixer with specific settings to reduce buffer underuns/lag
 # frequency=44100, size=-16, channels=2, buffer=1024
 try:
